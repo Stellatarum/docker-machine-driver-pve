@@ -21,6 +21,7 @@ tasks:
       echo "✅ ALL TOOLS INSTALLED"
 
   tools:go-licenses:
+    run: once
     vars:
       VERSION: v1.6.0
     cmd: >
@@ -29,6 +30,7 @@ tasks:
       && go install github.com/google/go-licenses@{{.VERSION}}
 
   tools:golangci-lint:
+    run: once
     vars:
       VERSION: v1.64.6
     status:
@@ -41,6 +43,7 @@ tasks:
       && go install github.com/golangci/golangci-lint/cmd/golangci-lint@{{.VERSION}}
 
   tools:rancher-machine:
+    run: once
     vars:
       VERSION: v0.15.0-rancher126
     status:
@@ -65,6 +68,7 @@ tasks:
       echo "✅ ALL DEPENDENCIES INSTALLED"
 
   dependencies:node:
+    run: once
     method: checksum
     sources:
       - package.json
@@ -73,6 +77,7 @@ tasks:
       yarn install --frozen-lockfile
 
   dependencies:go:
+    run: once
     method: checksum
     sources:
       - go.mod
@@ -96,12 +101,14 @@ tasks:
       echo "✅ ALL LINTERS PASSED"
 
   lint:commits:
+    run: once
     deps:
       - dependencies:node
     cmd: >
       yarn exec commitlint -- --from=main --verbose
 
   lint:go:
+    run: once
     deps:
       - tools:golangci-lint
       - dependencies:go
@@ -109,6 +116,7 @@ tasks:
       ./tools/golangci-lint run -v
 
   lint:go-licenses:
+    run: once
     deps:
       - tools:go-licenses
       - dependencies:go
@@ -118,6 +126,7 @@ tasks:
       --disallowed_types=forbidden,restricted,reciprocal,unknown
 
   lint:markdown:
+    run: once
     deps:
       - dependencies:node
     cmd: >
@@ -135,6 +144,7 @@ tasks:
       echo "✅ PROJECT BUILT"
 
   build:docker-machine-driver-pve:
+    run: once
     deps:
       - dependencies:go
     sources:

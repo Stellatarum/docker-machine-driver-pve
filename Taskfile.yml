@@ -58,21 +58,21 @@ tasks:
   dependencies:
     desc: Install dependencies
     deps:
-      - dependencies:node_modules
-      - dependencies:vendor
+      - dependencies:node
+      - dependencies:go
     silent: true
     cmd: >
       echo "✅ ALL DEPENDENCIES INSTALLED"
 
-  dependencies:node_modules:
+  dependencies:node:
     method: checksum
     sources:
       - package.json
-      - package-lock.json
+      - yarn.lock
     cmd: >
-      npm install
+      yarn install --frozen-lockfile
 
-  dependencies:vendor:
+  dependencies:go:
     method: checksum
     sources:
       - go.mod
@@ -97,21 +97,21 @@ tasks:
 
   lint:commits:
     deps:
-      - dependencies:node_modules
+      - dependencies:node
     cmd: >
-      npm exec commitlint -- --from=main --verbose
+      yarn exec commitlint -- --from=main --verbose
 
   lint:go:
     deps:
       - tools:golangci-lint
-      - dependencies:vendor
+      - dependencies:go
     cmd: >
       ./tools/golangci-lint run -v
 
   lint:go-licenses:
     deps:
       - tools:go-licenses
-      - dependencies:vendor
+      - dependencies:go
     cmd: >
       ./tools/go-licenses check ./...
       --ignore "github.com/stellatarum/docker-machine-driver-pve"
@@ -119,7 +119,7 @@ tasks:
 
   lint:markdown:
     deps:
-      - dependencies:node_modules
+      - dependencies:node
     cmd: >
       npm exec markdownlint-cli2 -- **/*.md
 
@@ -136,7 +136,7 @@ tasks:
 
   build:docker-machine-driver-pve:
     deps:
-      - dependencies:vendor
+      - dependencies:go
     sources:
       - cmd/**/*.go
     cmd: >

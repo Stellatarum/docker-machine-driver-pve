@@ -7,7 +7,7 @@ This document provides guidelines for setting up the development environment, ru
 * [VS Code](https://code.visualstudio.com/)
 * [Task](https://taskfile.dev/)
 * [Go](https://go.dev/)
-* [Node.js](https://nodejs.org/)
+* [Node.js](https://nodejs.org/) with [Yarn](https://yarnpkg.com/)
 
 ## Setting up Development Environment
 

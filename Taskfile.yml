@@ -21,6 +21,7 @@ tasks:
       echo "✅ ALL TOOLS INSTALLED"
 
   tools:go-licenses:
+    run: once
     vars:
       VERSION: v1.6.0
     cmd: >
@@ -29,6 +30,7 @@ tasks:
       && go install github.com/google/go-licenses@{{.VERSION}}
 
   tools:golangci-lint:
+    run: once
     vars:
       VERSION: v1.64.6
     status:
@@ -41,6 +43,7 @@ tasks:
       && go install github.com/golangci/golangci-lint/cmd/golangci-lint@{{.VERSION}}
 
   tools:rancher-machine:
+    run: once
     vars:
       VERSION: v0.15.0-rancher126
     status:
@@ -58,21 +61,23 @@ tasks:
   dependencies:
     desc: Install dependencies
     deps:
-      - dependencies:node_modules
-      - dependencies:vendor
+      - dependencies:node
+      - dependencies:go
     silent: true
     cmd: >
       echo "✅ ALL DEPENDENCIES INSTALLED"
 
-  dependencies:node_modules:
+  dependencies:node:
+    run: once
     method: checksum
     sources:
       - package.json
-      - package-lock.json
+      - yarn.lock
     cmd: >
-      npm install
+      yarn install --frozen-lockfile
 
-  dependencies:vendor:
+  dependencies:go:
+    run: once
     method: checksum
     sources:
       - go.mod
@@ -96,30 +101,34 @@ tasks:
       echo "✅ ALL LINTERS PASSED"
 
   lint:commits:
+    run: once
     deps:
-      - dependencies:node_modules
+      - dependencies:node
     cmd: >
-      npm exec commitlint -- --from=main --verbose
+      yarn exec commitlint -- --from=main --verbose
 
   lint:go:
+    run: once
     deps:
       - tools:golangci-lint
-      - dependencies:vendor
+      - dependencies:go
     cmd: >
       ./tools/golangci-lint run -v
 
   lint:go-licenses:
+    run: once
     deps:
       - tools:go-licenses
-      - dependencies:vendor
+      - dependencies:go
     cmd: >
       ./tools/go-licenses check ./...
       --ignore "github.com/stellatarum/docker-machine-driver-pve"
       --disallowed_types=forbidden,restricted,reciprocal,unknown
 
   lint:markdown:
+    run: once
     deps:
-      - dependencies:node_modules
+      - dependencies:node
     cmd: >
       npm exec markdownlint-cli2 -- **/*.md
 
@@ -135,8 +144,9 @@ tasks:
       echo "✅ PROJECT BUILT"
 
   build:docker-machine-driver-pve:
+    run: once
     deps:
-      - dependencies:vendor
+      - dependencies:go
     sources:
       - cmd/**/*.go
     cmd: >

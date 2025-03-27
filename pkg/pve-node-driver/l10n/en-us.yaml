@@ -1,0 +1,19 @@
+cluster:
+  provider:
+    pve: Proxmox VE
+  credential:
+    pve:
+      url:
+        label: Proxmox VE URL
+        placeholder: https://proxmox.local:8006
+      insecureTLS:
+        label: Disable Proxmox VE TLS certificate verification
+        warning: |
+          Disabling Proxmox VE TLS certificate verification is INSECURE, please ensure that you are aware of the associated risks.
+      tokenID:
+        label: Proxmox VE API Token ID
+        placeholder: root@pam!rancher
+        tooltip: Token ID must include username and realm
+      tokenSecret:
+        label: Proxmox VE API Token secret
+        placeholder: 00000000-0000-0000-0000-000000000000

@@ -17,3 +17,17 @@ cluster:
       tokenSecret:
         label: Proxmox VE API Token secret
         placeholder: 00000000-0000-0000-0000-000000000000
+  machineConfig:
+    pve:
+      resourcePool:
+        label: Proxmox VE Resource Pool name
+      template:
+        label: ID of the Proxmox VE template
+      isoDevice:
+        label: Bus/Device of the CD/DVD Drive to mount cloud-init ISO to (e.g. `scsi1`)
+      networkInterface:
+        label: Network interface to read machine‘s IP address form
+      sshUser:
+        label: Username for the SSH user that will be created via cloud-init
+      sshPort:
+        label: Port to use when connecting to the machine via SSH

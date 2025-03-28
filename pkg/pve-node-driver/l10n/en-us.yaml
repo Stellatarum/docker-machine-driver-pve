@@ -3,6 +3,11 @@ cluster:
     pve: Proxmox VE
   credential:
     pve:
+      errors:
+        fetchNodeDriver: |
+          Failed to fetch Proxmox VE Node Driver configuration.
+        whitelistedDomains: |
+          Proxmox VE domain is not present in Node Driver's whitelisted domains.
       url:
         label: Proxmox VE URL
         placeholder: https://proxmox.local:8006

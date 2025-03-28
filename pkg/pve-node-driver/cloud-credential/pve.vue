@@ -2,6 +2,7 @@
 import Banner from '@components/Banner/Banner';
 import { Checkbox } from '@components/Form/Checkbox';
 import { LabeledInput } from '@components/Form/LabeledInput';
+import { parse as parseUrl } from '@shell/utils/url';
 
 export default {
   components: {
@@ -19,6 +20,9 @@ export default {
       required: true,
     },
   },
+  data: () => ({
+    errorLabelKey: null,
+  }),
   created() {
     this.value.setData('url', this.value.decodedData.url ?? '');
     this.value.setData('insecureTls', this.value.decodedData.insecureTls ?? false);
@@ -46,12 +50,42 @@ export default {
 
       this.$emit('validationChanged', true);
     },
+    async test() {
+      this.errorLabelKey = null;
+
+      // Proxmox VE domain must be present in driver's whitelisted domains
+      try {
+        const nodeDriver = await this.$store.dispatch('rancher/find', {
+          type: 'nodedriver',
+          id:   'pve'
+        });
+
+        const domain = parseUrl(this.value.decodedData.url).host;
+        const whitelistedDomains = nodeDriver.whitelistDomains ?? [];
+
+        if(!whitelistedDomains.includes(domain)) {
+          this.errorLabelKey = 'cluster.credential.pve.errors.whitelistedDomains';
+          return false;
+        }
+      } catch(e) {
+        this.errorLabelKey = 'cluster.credential.pve.errors.fetchNodeDriver';
+        return false;
+      }
+
+      return true;
+    }
   }
 }
 </script>
 
 <template>
   <div>
+    <div class="mb-20" v-if="errorLabelKey">
+      <Banner
+        color="error"
+        :label-key="errorLabelKey"
+      />
+    </div>
     <div class="mb-20">
       <LabeledInput
         type="text"

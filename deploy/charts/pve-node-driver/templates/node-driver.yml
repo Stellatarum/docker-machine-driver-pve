@@ -5,6 +5,11 @@ metadata:
   labels:
     app.kubernetes.io/name: pve-node-driver
     app.kubernetes.io/version: {{ trimPrefix "v" .Chart.AppVersion | quote }}
+  annotations:
+    publicCredentialFields: url,insecureTls,tokenId
+    privateCredentialFields: tokenSecret
+    optionalCredentialFields: insecureTls
+    passwordFields: tokenSecret
 spec:
   displayName: "Proxmox VE"
   description: "Node Driver for Proxmox Virtual Environment"
@@ -13,5 +18,5 @@ spec:
   checksum: {{ .Values.nodeDriver.checksum | quote }}
   externalId: ""
   active: true
-  addCloudCredential: false
+  addCloudCredential: true
   builtin: false

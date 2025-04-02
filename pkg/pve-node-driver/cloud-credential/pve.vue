@@ -72,6 +72,33 @@ export default {
         return false;
       }
 
+      // Proxmox VE version must be 8.x
+      if(!this.value.decodedData.insecureTls) {
+        try {
+          const { data } = await this.$store.dispatch('management/request', {
+            method: 'GET',
+            url: '/meta/proxy/' + this.value.decodedData.url.replace(/^https?:\/\//, '') + '/api2/json/version',
+            headers: {
+              "X-API-Auth-Header": `PVEAPIToken=${this.value.decodedData.tokenId}=${this.value.decodedData.tokenSecret}`,
+            },
+            redirectUnauthorized: false,
+          })
+  
+          if(!data.version.startsWith('8.')) {
+            this.errorLabelKey = 'cluster.credential.pve.errors.unsupportedProxmoxVersion';
+            return false;
+          }
+        } catch(e) {
+          if(e._status == 401) {
+            this.errorLabelKey = 'cluster.credential.pve.errors.fetchProxmoxVersionUnauthorized';
+          } else {
+            this.errorLabelKey = 'cluster.credential.pve.errors.fetchProxmoxVersion';
+          }
+  
+          return false;
+        }
+      }
+
       return true;
     }
   }

@@ -8,13 +8,19 @@ cluster:
           Failed to fetch Proxmox VE Node Driver configuration.
         whitelistedDomains: |
           Proxmox VE domain is not present in Node Driver's whitelisted domains.
+        fetchProxmoxVersion: |
+          Failed to fetch Proxmox VE version.
+        fetchProxmoxVersionUnauthorized: |
+          Failed to fetch Proxmox VE version - Unauthorized.
+        unsupportedProxmoxVersion: |
+          Proxmox VE version is not supported.
       url:
         label: Proxmox VE URL
         placeholder: https://proxmox.local:8006
       insecureTLS:
         label: Disable Proxmox VE TLS certificate verification
         warning: |
-          Disabling Proxmox VE TLS certificate verification is INSECURE, please ensure that you are aware of the associated risks.
+          Disabling Proxmox VE TLS certificate verification is INSECURE, please ensure that you are aware of the associated risks. This will also disable version check and some UI features of the driver.
       tokenID:
         label: Proxmox VE API Token ID
         placeholder: root@pam!rancher

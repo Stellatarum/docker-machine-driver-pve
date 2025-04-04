@@ -52,7 +52,7 @@ type config struct {
 	// Bus/Device of the CD/DVD Drive to mount cloud-init ISO to (e.g. 'scsi1').
 	ISODeviceName string
 
-	// Network interface to read machine's IP address form.
+	// Network interface to read machine's IP address form (e.g. 'net0').
 	NetworkInterfaceName string
 }
 
@@ -97,7 +97,7 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 		mcnflag.StringFlag{
 			Name:   flagNetworkInterface,
 			EnvVar: flagEnvVarFromFlagName(flagNetworkInterface),
-			Usage:  "Network interface to read machine's IP address form",
+			Usage:  "Network interface to read machine's IP address form (e.g. 'net0')",
 		},
 		mcnflag.StringFlag{
 			Name:   flagSSHUser,

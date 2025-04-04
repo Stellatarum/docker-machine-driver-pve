@@ -42,16 +42,19 @@ func NewDriver(machineName, storePath string) *Driver {
 
 // PreCreateCheck implements drivers.Driver.
 func (d *Driver) PreCreateCheck() error {
+	// Check resource pool
 	resourcePool, err := d.getCurrentPVEResourcePool(context.TODO())
 	if err != nil {
 		return err
 	}
 
+	// Check template
 	template, err := d.getPVETemplate(context.TODO())
 	if err != nil {
 		return err
 	}
 
+	// Check ISO device
 	var (
 		isoDeviceConfig string
 		isoDeviceFound  bool
@@ -69,16 +72,23 @@ func (d *Driver) PreCreateCheck() error {
 	}
 
 	if !isoDeviceFound {
-		return errors.New("cloud-init ISO device not found on template")
+		return fmt.Errorf("cloud-init ISO device '%s' not found on the template", d.ISODeviceName)
 	}
 
 	if !strings.Contains(isoDeviceConfig, "media=cdrom") {
 		return errors.New("cloud-init ISO device must be of type media=cdrom")
 	}
 
+	// Check network interface
+	_, networkInterfaceFound := template.VirtualMachineConfig.MergeNets()[d.NetworkInterfaceName]
+	if !networkInterfaceFound {
+		return fmt.Errorf("network interface '%s' not found on the template", d.NetworkInterfaceName)
+	}
+
 	log.Debugf("Using resource pool '%s'", resourcePool.PoolID)
 	log.Debugf("Using template name '%s' on node '%s'", template.Name, template.Node)
-	log.Debugf("Using template device '%s' for cloud-init ISO", d.ISODeviceName)
+	log.Debugf("Using device '%s' for cloud-init ISO", d.ISODeviceName)
+	log.Debugf("Using network interface '%s' for IP address", d.NetworkInterfaceName)
 
 	return nil
 }
@@ -182,7 +192,24 @@ func (d *Driver) GetIP() (string, error) {
 		return "", errors.New("machine is powered off")
 	}
 
-	networkInterfaces, err := machine.AgentGetNetworkIFaces(context.TODO())
+	networkInterfaceConfiguration, networkInterfaceFound := machine.VirtualMachineConfig.MergeNets()[d.NetworkInterfaceName]
+	if !networkInterfaceFound {
+		return "", fmt.Errorf("failed to retrieve Proxmox VE machine's ID='%d' network interface configuration for device '%s'", *d.PVEMachineID, d.NetworkInterfaceName)
+	}
+
+	networkInterfaceMAC := getMACFromPveNetworkDevice(networkInterfaceConfiguration)
+	if networkInterfaceMAC == "" {
+		return "", fmt.Errorf(
+			"failed to retrieve Proxmox VE machine's ID='%d' network interface MAC for device '%s' with configuration '%s'",
+			*d.PVEMachineID,
+			d.NetworkInterfaceName,
+			networkInterfaceConfiguration,
+		)
+	}
+
+	networkInterfaceMAC = strings.ToLower(networkInterfaceMAC)
+
+	osNetworkInterfaces, err := machine.AgentGetNetworkIFaces(context.TODO())
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve Proxmox VE machine's ID='%d' network interfaces: %w", d.PVEMachineID, err)
 	}
@@ -190,12 +217,12 @@ func (d *Driver) GetIP() (string, error) {
 	possibleIPv4s := []string{}
 	possibleIPv6s := []string{}
 
-	for _, networkInterface := range networkInterfaces {
-		if networkInterface.Name != d.NetworkInterfaceName {
+	for _, osNetworkInterface := range osNetworkInterfaces {
+		if strings.ToLower(osNetworkInterface.HardwareAddress) != networkInterfaceMAC {
 			continue
 		}
 
-		for _, address := range networkInterface.IPAddresses {
+		for _, address := range osNetworkInterface.IPAddresses {
 			parsedAddress := net.ParseIP(address.IPAddress)
 
 			if parsedAddress == nil {

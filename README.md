@@ -48,7 +48,7 @@ You can use [sample Ubuntu Server template](deploy/templates/ubuntu-server) for 
 | `--pve-resource-pool`     | `PVE_RESOURCE_POOL`     | N/A (required)                     | Proxmox VE Resource Pool name                                                   |
 | `--pve-template`          | `PVE_TEMPLATE`          | N/A (required)                     | ID of the Proxmox VE template                                                   |
 | `--pve-iso-device`        | `PVE_ISO_DEVICE`        | N/A (required)                     | Bus/Device of the CD/DVD Drive to mount cloud-init ISO to (e.g. `scsi1`)        |
-| `--pve-network-interface` | `PVE_NETWORK_INTERFACE` | N/A (required)                     | Network interface to read machine's IP address form                             |
+| `--pve-network-interface` | `PVE_NETWORK_INTERFACE` | N/A (required)                     | Network interface to read machine's IP address form  (e.g. `net0`)              |
 | `--pve-ssh-user`          | `PVE_SSH_USER`          | `service`                          | Username for the SSH user that will be created via cloud-init                   |
 | `--pve-ssh-port`          | `PVE_SSH_PORT`          | `22`                               | Port to use when connecting to the machine via SSH                              |
 

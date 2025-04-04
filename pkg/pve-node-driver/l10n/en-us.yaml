@@ -28,11 +28,19 @@ cluster:
         label: Proxmox VE Resource Pool name
       template:
         label: ID of the Proxmox VE template
-      isoDevice:
-        label: Bus/Device of the CD/DVD Drive to mount cloud-init ISO to (e.g. `scsi1`)
-      networkInterface:
-        label: Network interface to read machine‘s IP address form
-      sshUser:
-        label: Username for the SSH user that will be created via cloud-init
-      sshPort:
-        label: Port to use when connecting to the machine via SSH
+      devices:
+        header: Devices
+        iso:
+          label: CD/DVD Drive
+          tooltip: Bus/Device of the CD/DVD Drive to mount cloud-init ISO to (e.g. `scsi1`)
+        network:
+          label: Network interface
+          tooltip: Network interface to read machine‘s IP address form (e.g. `ens18`)
+      ssh:
+        header: SSH Connection
+        username:
+          label: Username
+          tooltip: Username for the SSH user that will be created via cloud-init
+        port:
+          label: Port
+          tooltip: Port to use when connecting to the machine via SSH

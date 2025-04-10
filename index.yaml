@@ -3,6 +3,36 @@ entries:
   pve-node-driver:
   - annotations:
       catalog.cattle.io/display-name: Proxmox VE Node Driver
+      catalog.cattle.io/kube-version: '>= 1.16.0-0'
+      catalog.cattle.io/namespace: cattle-ui-plugin-system
+      catalog.cattle.io/os: linux
+      catalog.cattle.io/permits-os: linux, windows
+      catalog.cattle.io/rancher-version: '>= 2.10.0-0'
+      catalog.cattle.io/release-name: pve-node-driver
+      catalog.cattle.io/scope: management
+      catalog.cattle.io/ui-component: plugins
+      catalog.cattle.io/ui-extensions-version: '>= 3.0.0 < 4.0.0'
+    apiVersion: v2
+    appVersion: v1.0.0-rc3
+    created: "2025-04-10T13:21:48.914113227Z"
+    description: Node Driver for Proxmox Virtual Environment.
+    digest: 12b46fa16e3bc3cae1a2690dfc9072299d7a76f2e1c450688d567d66a9af864d
+    home: https://github.com/stellatarum/docker-machine-driver-pve
+    keywords:
+    - infrastructure
+    maintainers:
+    - email: contact@stellatarum.com
+      name: Stellatarum
+      url: https://stellatarum.com/
+    name: pve-node-driver
+    sources:
+    - https://github.com/stellatarum/docker-machine-driver-pve
+    type: application
+    urls:
+    - https://github.com/Stellatarum/docker-machine-driver-pve/releases/download/v1.0.0-rc3/pve-node-driver-1.0.0-rc3.tgz
+    version: 1.0.0-rc3
+  - annotations:
+      catalog.cattle.io/display-name: Proxmox VE Node Driver
       catalog.cattle.io/namespace: cattle-ui-plugin-system
       catalog.cattle.io/os: linux
       catalog.cattle.io/release-name: pve-node-driver
@@ -22,4 +52,4 @@ entries:
     urls:
     - https://github.com/Stellatarum/docker-machine-driver-pve/releases/download/v1.0.0-rc2/pve-node-driver-1.0.0-rc2.tgz
     version: 1.0.0-rc2
-generated: "2025-03-18T08:09:31.823960572Z"
+generated: "2025-04-10T13:21:48.913721008Z"

@@ -24,6 +24,55 @@ This is a Docker/[Rancher Machine](https://github.com/rancher/machine) driver fo
 
 1. Go to `Cluster Management > Drivers > Node Drivers > Pve > Edit config` and add your Proxmox domain to `Whitelist Domains`
 
+### Rancher in air-gapped environment
+
+1. Download all required files on your jump machine:
+
+    1. Set a variable with version to download (see [releases](https://github.com/Stellatarum/docker-machine-driver-pve/releases) for available versions):
+
+        ```sh
+        export PVE_NODE_DRIVER_VERSION="1.0.0"
+        ```
+
+    1. Add Helm repository:
+
+        ```sh
+        helm repo add pve-node-driver https://stellatarum.github.io/docker-machine-driver-pve
+        ```
+
+    1. Download the Helm Chart:
+
+        ```sh
+        helm pull pve-node-driver/pve-node-driver --version "${PVE_NODE_DRIVER_VERSION}"
+        ```
+
+    1. Download driver binary:
+
+        ```sh
+        wget $(helm show values --jsonpath "{.nodeDriver.url}" "./pve-node-driver-${PVE_NODE_DRIVER_VERSION}.tgz")
+        ```
+
+    1. Download UI Extension:
+
+        ```sh
+        mkdir -p ./ui-extension/plugin \
+        && wget --directory-prefix=$PWD/ui-extension $(helm show values --jsonpath "{.uiPlugin.endpoint}" "./pve-node-driver-${PVE_NODE_DRIVER_VERSION}.tgz")/files.txt \
+        && wget --directory-prefix=$PWD/ui-extension/plugin --base $(helm show values --jsonpath "{.uiPlugin.endpoint}" "./pve-node-driver-${PVE_NODE_DRIVER_VERSION}.tgz")/ -i $PWD/ui-extension/files.txt
+        ```
+
+1. Upload driver binary and UI Extension to a HTTP server within your environment
+
+1. Install the Helm Chart with following values adjusted:
+
+    ```yaml
+    nodeDriver:
+      url: >-
+        <YOUR URL>/docker-machine-driver-pve
+    uiPlugin:
+      endpoint: >-
+        <YOUR URL>/ui-extension
+    ```
+
 ### Docker/Rancher Machine
 
 Download `docker-machine-driver-pve` from [latest release](https://github.com/Stellatarum/docker-machine-driver-pve/releases/latest) and put it in your `PATH`.

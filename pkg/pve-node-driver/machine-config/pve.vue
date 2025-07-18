@@ -374,7 +374,8 @@ export default {
         this.currentValue.processorSockets = data.sockets;
         this.currentValue.processorCores = data.cores;
         this.currentValue.memory = data.memory;
-        this.currentValue.memoryBalloon = data.balloon ?? data.memory;
+        // Memory balloon is an advanced (hidden by default) field, so we default to using the memory value so it is synced unless set explicitly to a different value.
+        this.currentValue.memoryBalloon = data.memory;
       } catch(e) {
         this.currentValue.processorSockets = "";
         this.currentValue.processorCores = "";
@@ -610,23 +611,29 @@ export default {
           step="256"
         />
       </div>
-      <div class="col span-6">
-        <!-- Memory balloon -->
-        <UnitInput
-          type="number"
-          :mode="mode"
-          :disabled="disabled || (templates != null && !currentValue.template)"
-          v-model:value="currentValue.memoryBalloon"
-          label-key="cluster.machineConfig.pve.hardware.memoryBalloon.label"
-          suffix="MiB"
-          min="0"
-          step="256"
-          :max="currentValue.memory != '' ? currentValue.memory : undefined"
-        />
-      </div>
     </div>
 
     <portal :to="`advanced-${uuid}`">
+      <h3>
+        <t k="cluster.machineConfig.pve.memoryBalloon.header" />
+      </h3>
+      <div class="row mb-20">
+        <div class="col span-6">
+          <!-- Memory balloon -->
+          <UnitInput
+            type="number"
+            :mode="mode"
+            :disabled="disabled || (templates != null && !currentValue.template)"
+            v-model:value="currentValue.memoryBalloon"
+            label-key="cluster.machineConfig.pve.memoryBalloon.minimumMemory.label"
+            suffix="MiB"
+            min="0"
+            step="256"
+            :max="currentValue.memory != '' ? currentValue.memory : undefined"
+          />
+        </div>
+      </div>
+
       <h3>
         <t k="cluster.machineConfig.pve.ssh.header" />
       </h3>

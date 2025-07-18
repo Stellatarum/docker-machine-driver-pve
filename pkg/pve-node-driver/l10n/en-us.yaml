@@ -50,7 +50,9 @@ cluster:
           label: Processor cores
         memory:
           label: Memory
-        memoryBalloon:
+      memoryBalloon:
+        header: Memory ballooning
+        minimumMemory:
           label: Minimum memory (balloon target)
       ssh:
         header: SSH Connection

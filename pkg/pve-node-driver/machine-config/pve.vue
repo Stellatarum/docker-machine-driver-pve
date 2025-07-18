@@ -11,6 +11,10 @@ export default {
     UnitInput,
   },
   props: {
+    uuid: {
+      type:     String,
+      required: true,
+    },
     mode: {
       type:     String,
       required: true,
@@ -567,34 +571,36 @@ export default {
       </div>
     </div>
 
-    <h3>
-      <t k="cluster.machineConfig.pve.ssh.header" />
-    </h3>
-    <div class="row mb-20">
-      <div class="col span-6">
-        <!-- SSH Username -->
-        <LabeledInput
-          type="text"
-          :mode="mode"
-          v-model:value="currentValue.sshUser"
-          label-key="cluster.machineConfig.pve.ssh.username.label"
-          tooltip-key="cluster.machineConfig.pve.ssh.username.tooltip"
-          required
-        />
+    <portal :to="`advanced-${uuid}`">
+      <h3>
+        <t k="cluster.machineConfig.pve.ssh.header" />
+      </h3>
+      <div class="row">
+        <div class="col span-6">
+          <!-- SSH Username -->
+          <LabeledInput
+            type="text"
+            :mode="mode"
+            v-model:value="currentValue.sshUser"
+            label-key="cluster.machineConfig.pve.ssh.username.label"
+            tooltip-key="cluster.machineConfig.pve.ssh.username.tooltip"
+            required
+          />
+        </div>
+        <div class="col span-6">
+          <!-- SSH Port -->
+          <LabeledInput
+            type="number"
+            :mode="mode"
+            v-model:value="currentValue.sshPort"
+            label-key="cluster.machineConfig.pve.ssh.port.label"
+            tooltip-key="cluster.machineConfig.pve.ssh.port.tooltip"
+            required
+            min="1"
+            step="1"
+          />
+        </div>
       </div>
-      <div class="col span-6">
-        <!-- SSH Port -->
-        <LabeledInput
-          type="number"
-          :mode="mode"
-          v-model:value="currentValue.sshPort"
-          label-key="cluster.machineConfig.pve.ssh.port.label"
-          tooltip-key="cluster.machineConfig.pve.ssh.port.tooltip"
-          required
-          min="1"
-          step="1"
-        />
-      </div>
-    </div>
+    </portal>
   </div>
 </template>

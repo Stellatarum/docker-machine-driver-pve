@@ -407,58 +407,60 @@ export default {
 
 <template>
   <div class="mt-20 mb-20">
-    <!-- Resource pool  -->
-    <LabeledInput
-      v-if="resourcePools == null"
-      type="text"
-      :mode="mode"
-      :disabled="disabled"
-      :value="currentValue.resourcePool"
-      @change="e => { currentValue.resourcePool = e.target.value}"
-      label-key="cluster.machineConfig.pve.resourcePool.label"
-      required
-    />
-
-    <LabeledSelect
-      v-else
-      :mode="mode"
-      :disabled="disabled"
-      v-model:value="currentValue.resourcePool"
-      :options="resourcePools"
-      label-key="cluster.machineConfig.pve.resourcePool.label"
-      required
-    />
-
-    <!-- Template -->
-    <LabeledInput
-      v-if="templates == null"
-      class="mt-20"
-      type="number"
-      :mode="mode"
-      :disabled="disabled"
-      :value="currentValue.template"
-      @change="e => { currentValue.template = e.target.value}"
-      label-key="cluster.machineConfig.pve.template.label"
-      required
-      min="1"
-      step="1"
-    />
-
-    <LabeledSelect
-      v-else
-      class="mt-20"
-      :mode="mode"
-      :disabled="disabled || (resourcePools != null && !currentValue.resourcePool)"
-      v-model:value="templateSelectValue"
-      @option:selected="selectTemplate"
-      :options="Object.values(templateSelectOptions)"
-      label-key="cluster.machineConfig.pve.template.label"
-      required
-    />
-
-    <h3 class="mt-20">
-      <t k="cluster.machineConfig.pve.devices.header" />
+    <h3>
+      <t k="cluster.machineConfig.pve.template.header" />
     </h3>
+    <div class="row mb-10">
+      <div class="col span-6">
+        <!-- Resource pool  -->
+        <LabeledInput
+          v-if="resourcePools == null"
+          type="text"
+          :mode="mode"
+          :disabled="disabled"
+          :value="currentValue.resourcePool"
+          @change="e => { currentValue.resourcePool = e.target.value}"
+          label-key="cluster.machineConfig.pve.template.resourcePool.label"
+          required
+        />
+
+        <LabeledSelect
+          v-else
+          :mode="mode"
+          :disabled="disabled"
+          v-model:value="currentValue.resourcePool"
+          :options="resourcePools"
+          label-key="cluster.machineConfig.pve.template.resourcePool.label"
+          required
+        />
+      </div>
+      <div class="col span-6">
+        <!-- Template -->
+        <LabeledInput
+          v-if="templates == null"
+          type="number"
+          :mode="mode"
+          :disabled="disabled"
+          :value="currentValue.template"
+          @change="e => { currentValue.template = e.target.value}"
+          label-key="cluster.machineConfig.pve.template.templateID.label"
+          required
+          min="1"
+          step="1"
+        />
+
+        <LabeledSelect
+          v-else
+          :mode="mode"
+          :disabled="disabled || (resourcePools != null && !currentValue.resourcePool)"
+          v-model:value="templateSelectValue"
+          @option:selected="selectTemplate"
+          :options="Object.values(templateSelectOptions)"
+          label-key="cluster.machineConfig.pve.template.templateID.label"
+          required
+        />
+      </div>
+    </div>
     <div class="row mb-20">
       <div class="col span-6">
         <!-- ISO Device -->
@@ -469,8 +471,8 @@ export default {
           :disabled="disabled"
           :value="currentValue.isoDevice"
           @change="e => { currentValue.isoDevice = e.target.value}"
-          label-key="cluster.machineConfig.pve.devices.iso.label"
-          tooltip-key="cluster.machineConfig.pve.devices.iso.tooltip"
+          label-key="cluster.machineConfig.pve.template.iso.label"
+          tooltip-key="cluster.machineConfig.pve.template.iso.tooltip"
           required
         />
 
@@ -480,8 +482,8 @@ export default {
           :disabled="disabled || (templates != null && !currentValue.template)"
           v-model:value="currentValue.isoDevice"
           :options="isoDeviceSelectOptions"
-          label-key="cluster.machineConfig.pve.devices.iso.label"
-          tooltip-key="cluster.machineConfig.pve.devices.iso.tooltip"
+          label-key="cluster.machineConfig.pve.template.iso.label"
+          tooltip-key="cluster.machineConfig.pve.template.iso.tooltip"
           required
         />
       </div>
@@ -493,8 +495,8 @@ export default {
           :mode="mode"
           :value="currentValue.networkInterface"
           @change="e => { currentValue.networkInterface = e.target.value}"
-          label-key="cluster.machineConfig.pve.devices.network.label"
-          tooltip-key="cluster.machineConfig.pve.devices.network.tooltip"
+          label-key="cluster.machineConfig.pve.template.network.label"
+          tooltip-key="cluster.machineConfig.pve.template.network.tooltip"
           required
         />
 
@@ -504,8 +506,8 @@ export default {
           :disabled="disabled || (templates != null && !currentValue.template)"
           v-model:value="currentValue.networkInterface"
           :options="networkInterfaceSelectOptions"
-          label-key="cluster.machineConfig.pve.devices.network.label"
-          tooltip-key="cluster.machineConfig.pve.devices.network.tooltip"
+          label-key="cluster.machineConfig.pve.template.network.label"
+          tooltip-key="cluster.machineConfig.pve.template.network.tooltip"
           required
         />
       </div>

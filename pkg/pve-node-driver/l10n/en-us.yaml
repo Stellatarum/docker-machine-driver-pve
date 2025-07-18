@@ -30,14 +30,14 @@ cluster:
         placeholder: 00000000-0000-0000-0000-000000000000
   machineConfig:
     pve:
-      resourcePool:
-        label: Name of the Proxmox VE Resource Pool
       template:
-        label: ID of the Proxmox VE Template
-      devices:
-        header: Devices
+        header: Template
+        resourcePool:
+          label: Name of the Proxmox VE Resource Pool
+        templateID:
+          label: ID of the Proxmox VE Template
         iso:
-          label: CD/DVD Drive
+          label: Cloud-init CD/DVD Drive
           tooltip: Bus/Device of the CD/DVD Drive to mount cloud-init ISO to (e.g. `scsi1`)
         network:
           label: Network interface

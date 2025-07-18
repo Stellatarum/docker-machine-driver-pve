@@ -452,10 +452,10 @@ export default {
       required
     />
 
-    <h2 class="mt-20">
+    <h3 class="mt-20">
       <t k="cluster.machineConfig.pve.devices.header" />
-    </h2>
-    <div class="row mt-20">
+    </h3>
+    <div class="row mb-20">
       <div class="col span-6">
         <!-- ISO Device -->
         <LabeledInput
@@ -507,10 +507,10 @@ export default {
       </div>
     </div>
 
-    <h2 class="mt-20">
+    <h3>
       <t k="cluster.machineConfig.pve.hardware.header" />
-    </h2>
-    <div class="row mt-20">
+    </h3>
+    <div class="row mb-10">
       <div class="col span-6">
         <!-- Processor sockets -->
         <UnitInput
@@ -537,7 +537,7 @@ export default {
       </div>
     </div>
 
-    <div class="row mt-20">
+    <div class="row mb-20">
       <div class="col span-6">
         <!-- Memory -->
         <UnitInput
@@ -567,10 +567,10 @@ export default {
       </div>
     </div>
 
-    <h2 class="mt-20">
+    <h3>
       <t k="cluster.machineConfig.pve.ssh.header" />
-    </h2>
-    <div class="row mt-20">
+    </h3>
+    <div class="row mb-20">
       <div class="col span-6">
         <!-- SSH Username -->
         <LabeledInput
@@ -596,6 +596,5 @@ export default {
         />
       </div>
     </div>
-
   </div>
 </template>

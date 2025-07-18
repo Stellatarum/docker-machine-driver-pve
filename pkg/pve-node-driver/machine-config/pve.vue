@@ -79,7 +79,10 @@ export default {
       await this.fetchDevices();
     },
     'currentValue.template': async function (){
-      await this.fetchDevices();
+      await Promise.all([
+        this.fetchDevices(),
+        this.fetchHardware(),
+      ]);
     },
     currentValue: {
       deep: true,
@@ -333,6 +336,45 @@ export default {
         this.fetchingCount -= 1;
       }
     },
+    async fetchHardware() {
+      if(this.credential == null) {
+        return;
+      }
+
+      if(this.templates && this.currentValue.template == '') {
+        return;
+      }
+
+      try {
+        this.fetchingCount += 1;
+
+        if(!this.currentValue.template) {
+          throw new Error('Template is not selected');
+        }
+
+        const template = this.templates.find(template => this.currentValue.template == template.vmid);
+
+        if(!template) {
+          throw new Error("Template not found")
+        }
+
+        const { data } = await this.fetchFromProxmox(`/api2/json/nodes/${template.node}/qemu/${template.vmid}/config`);
+
+        console.log(data);
+
+        this.currentValue.processorSockets = data.sockets;
+        this.currentValue.processorCores = data.cores;
+        this.currentValue.memory = data.memory;
+        this.currentValue.memoryBalloon = data.balloon ?? data.memory;
+      } catch(e) {
+        this.currentValue.processorSockets = "";
+        this.currentValue.processorCores = "";
+        this.currentValue.memory = "";
+        this.currentValue.memoryBalloon = "";
+      } finally {
+        this.fetchingCount -= 1;
+      }
+    },
     fetchFromProxmox(apiPath){
       if(this.credential == null) {
         throw new Error("Credential not available")
@@ -522,6 +564,7 @@ export default {
         <UnitInput
           type="number"
           :mode="mode"
+          :disabled="disabled || (templates != null && !currentValue.template)"
           v-model:value="currentValue.processorSockets"
           label-key="cluster.machineConfig.pve.hardware.processorSockets.label"
           suffix="sockets"
@@ -534,6 +577,7 @@ export default {
         <UnitInput
           type="number"
           :mode="mode"
+          :disabled="disabled || (templates != null && !currentValue.template)"
           v-model:value="currentValue.processorCores"
           label-key="cluster.machineConfig.pve.hardware.processorCores.label"
           suffix="cores"
@@ -549,6 +593,7 @@ export default {
         <UnitInput
           type="number"
           :mode="mode"
+          :disabled="disabled || (templates != null && !currentValue.template)"
           v-model:value="currentValue.memory"
           label-key="cluster.machineConfig.pve.hardware.memory.label"
           suffix="MiB"
@@ -562,6 +607,7 @@ export default {
         <UnitInput
           type="number"
           :mode="mode"
+          :disabled="disabled || (templates != null && !currentValue.template)"
           v-model:value="currentValue.memoryBalloon"
           label-key="cluster.machineConfig.pve.hardware.memoryBalloon.label"
           suffix="MiB"

@@ -43,22 +43,24 @@ You can use [sample Ubuntu Server template](deploy/templates/ubuntu-server) for 
 
 ## Configuration
 
-| Flag                      | Environment variable    | Default value                      | Description                                                                                           |
-| ------------------------- | ----------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `--pve-url`               | `PVE_URL`               | N/A (required)                     | Proxmox VE URL (e.g. `https://<PROXMOX VE ADDRESS>:8006`)                                             |
-| `--pve-insecure-tls`      | `PVE_INSECURE_TLS`      | `false`                            | Disables Proxmox VE TLS certificate verification                                                      |
-| `--pve-token-id`          | `PVE_TOKEN_ID`          | N/A (required)                     | Proxmox VE API Token ID (including username and realm, e.g. `root@pam!rancher`)                       |
-| `--pve-token-secret`      | `PVE_TOKEN_SECRET`      | N/A (required)                     | Proxmox VE API Token secret                                                                           |
-| `--pve-resource-pool`     | `PVE_RESOURCE_POOL`     | N/A (required)                     | Proxmox VE Resource Pool name                                                                         |
-| `--pve-template`          | `PVE_TEMPLATE`          | N/A (required)                     | ID of the Proxmox VE template                                                                         |
-| `--pve-iso-device`        | `PVE_ISO_DEVICE`        | N/A (required)                     | Bus/Device of the CD/DVD Drive to mount cloud-init ISO to (e.g. `scsi1`)                              |
-| `--pve-network-interface` | `PVE_NETWORK_INTERFACE` | N/A (required)                     | Bus/Device of the network interface to read machine's IP address from (e.g. `net0`)                   |
-| `--pve-ssh-user`          | `PVE_SSH_USER`          | `service`                          | Username for the SSH user that will be created via cloud-init                                         |
-| `--pve-ssh-port`          | `PVE_SSH_PORT`          | `22`                               | Port to use when connecting to the machine via SSH                                                    |
-| `--pve-processor-sockets` | `PVE_PROCESSOR_SOCKETS` | `0`                                | Number of processor sockets. If set to `0`, this configuration is skipped.                            |
-| `--pve-processor-cores`   | `PVE_PROCESSOR_CORES`   | `0`                                | Number of processor cores. If set to `0`, this configuration is skipped.                              |
-| `--pve-memory`            | `PVE_MEMORY`            | `0`                                | Amount of memory in MiB. If set to `0`, this configuration is skipped.                                |
-| `--pve-memory-balloon`    | `PVE_MEMORY_BALLOON`    | `0`                                | Minimum amount of memory in MiB. If set to `0`, defaults to `--pve-memory` or skips if it's also `0`. |
+| Flag                      | Environment variable    | Default value                      | Description                                                                                                          |
+| ------------------------- | ----------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `--pve-url`               | `PVE_URL`               | N/A (required)                     | Proxmox VE URL (e.g. `https://<PROXMOX VE ADDRESS>:8006`).                                                           |
+| `--pve-insecure-tls`      | `PVE_INSECURE_TLS`      | `false`                            | Disables Proxmox VE TLS certificate verification.                                                                    |
+| `--pve-token-id`          | `PVE_TOKEN_ID`          | N/A (required)                     | Proxmox VE API Token ID (including username and realm, e.g. `root@pam!rancher`).                                     |
+| `--pve-token-secret`      | `PVE_TOKEN_SECRET`      | N/A (required)                     | Proxmox VE API Token secret.                                                                                         |
+| `--pve-resource-pool`     | `PVE_RESOURCE_POOL`     | N/A (required)                     | Proxmox VE Resource Pool name.                                                                                       |
+| `--pve-template`          | `PVE_TEMPLATE`          | N/A (required)                     | ID of the Proxmox VE template.                                                                                       |
+| `--pve-iso-device`        | `PVE_ISO_DEVICE`        | N/A (required)                     | Bus/Device of the CD/DVD Drive to mount cloud-init ISO to (e.g. `scsi1`).                                            |
+| `--pve-network-interface` | `PVE_NETWORK_INTERFACE` | N/A (required)                     | Bus/Device of the network interface to read machine's IP address from (e.g. `net0`).                                 |
+| `--pve-ssh-user`          | `PVE_SSH_USER`          | `service`                          | Username for the SSH user that will be created via cloud-init.                                                       |
+| `--pve-ssh-port`          | `PVE_SSH_PORT`          | `22`                               | Port to use when connecting to the machine via SSH.                                                                  |
+| `--pve-processor-sockets` | `PVE_PROCESSOR_SOCKETS` | *unset*                            | If set, number of processor sockets to configure for the machine.                                                    |
+| `--pve-processor-cores`   | `PVE_PROCESSOR_CORES`   | *unset*                            | If set, number of processor cores to configure for the machine.                                                      |
+| `--pve-memory`            | `PVE_MEMORY`            | *unset* <sup>1</sup>               | If set, amount of memory in MiB to configure for the machine.                                                        |
+| `--pve-memory-balloon`    | `PVE_MEMORY_BALLOON`    | *unset* <sup>1</sup>               | If set, minimum amount of memory in MiB to configure for the machine.<br> If set to `0`, disables memory ballooning. |
+
+<sup>1</sup> - If only one of `--pve-memory` or `--pve-memory-balloon` is specified, the other one will automatically be defaulted to the same value except if `--pve-memory-balloon` is set to `0`.
 
 ## Contributing
 

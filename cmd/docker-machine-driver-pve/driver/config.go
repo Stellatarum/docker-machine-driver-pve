@@ -3,6 +3,7 @@ package driver
 import (
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/rancher/machine/libmachine/drivers"
@@ -59,17 +60,18 @@ type config struct {
 	// Bus/Device of the network interface to read machine's IP address from (e.g. 'net0').
 	NetworkInterfaceName string
 
-	// Number of processor sockets. If set to 0 (default), this configuration is skipped.
-	ProcessorSockets int
+	// If set, number of processor sockets to configure for the machine.
+	ProcessorSockets *int
 
-	// Number of processor cores. If set to 0 (default), this configuration is skipped.
-	ProcessorCores int
+	// If set, number of processor cores to configure for the machine.
+	ProcessorCores *int
 
-	// Amount of memory in MiB. If set to 0 (default), this configuration is skipped.
-	Memory int
+	// If set, amount of memory in MiB to configure for the machine.
+	Memory *int
 
-	// Minimum amount of memory in MiB. If set to 0 (default), defaults to "pve-memory" or skips if it's also 0.
-	MemoryBalloon int
+	// If set, minimum amount of memory in MiB to configure for the machine.
+	// If set to 0, disables memory ballooning.
+	MemoryBalloon *int
 }
 
 // GetCreateFlags implements drivers.Driver.
@@ -125,32 +127,32 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			EnvVar: flagEnvVarFromFlagName(flagSSHPort),
 			Usage:  fmt.Sprintf("Port to use when connecting to the machine via SSH, defaults to '%d'", defaultSSHPort),
 		},
-		mcnflag.IntFlag{
+		mcnflag.StringFlag{
 			Name:   flagProcessorSockets,
 			EnvVar: flagEnvVarFromFlagName(flagProcessorSockets),
-			Usage:  "Number of processor sockets. If set to 0 (default), this configuration is skipped.",
+			Usage:  "If set, number of processor sockets to configure for the machine.",
 		},
-		mcnflag.IntFlag{
+		mcnflag.StringFlag{
 			Name:   flagProcessorCores,
 			EnvVar: flagEnvVarFromFlagName(flagProcessorCores),
-			Usage:  "Number of processor cores. If set to 0 (default), this configuration is skipped.",
+			Usage:  "If set, number of processor cores to configure for the machine.",
 		},
-		mcnflag.IntFlag{
+		mcnflag.StringFlag{
 			Name:   flagMemory,
 			EnvVar: flagEnvVarFromFlagName(flagMemory),
-			Usage:  "Amount of memory in MiB. If set to 0 (default), this configuration is skipped.",
+			Usage:  "If set, amount of memory in MiB to configure for the machine.",
 		},
-		mcnflag.IntFlag{
+		mcnflag.StringFlag{
 			Name:   flagMemoryBalloon,
 			EnvVar: flagEnvVarFromFlagName(flagMemoryBalloon),
-			Usage:  fmt.Sprintf("Minimum amount of memory in MiB. If set to 0 (default), defaults to value of '--%s' or skips if it's also set to 0.", flagMemory),
+			Usage:  "If set, minimum amount of memory in MiB to configure for the machine. If set to 0, disables memory ballooning.",
 		},
 	}
 }
 
 // SetConfigFromFlags implements drivers.Driver.
 //
-//nolint:cyclop
+//nolint:cyclop,gocyclo
 func (d *Driver) SetConfigFromFlags(opts drivers.DriverOptions) error {
 	d.URL = opts.String(flagURL)
 	if d.URL == "" {
@@ -205,29 +207,43 @@ func (d *Driver) SetConfigFromFlags(opts drivers.DriverOptions) error {
 		return fmt.Errorf("flag '--%s' must be > 0", flagSSHPort)
 	}
 
-	d.ProcessorSockets = opts.Int(flagProcessorSockets)
-	if d.ProcessorSockets != 0 && d.ProcessorSockets < 1 {
-		return fmt.Errorf("flag '--%s' must be >= 1; set to 0 to disable", flagProcessorSockets)
+	var err error
+
+	if d.ProcessorSockets, err = parseStringFlagToInt(opts.String(flagProcessorSockets)); err != nil {
+		return fmt.Errorf("failed to parse '--%s': %w", flagProcessorSockets, err)
+	} else if d.ProcessorSockets != nil && *d.ProcessorSockets < 1 {
+		return fmt.Errorf("flag '--%s' must be >= 1", flagProcessorSockets)
 	}
 
-	d.ProcessorCores = opts.Int(flagProcessorCores)
-	if d.ProcessorCores != 0 && d.ProcessorCores < 1 {
-		return fmt.Errorf("flag '--%s' must be >= 1; set to 0 to disable", flagProcessorCores)
+	if d.ProcessorCores, err = parseStringFlagToInt(opts.String(flagProcessorCores)); err != nil {
+		return fmt.Errorf("failed to parse '--%s': %w", flagProcessorCores, err)
+	} else if d.ProcessorCores != nil && *d.ProcessorCores < 1 {
+		return fmt.Errorf("flag '--%s' must be >= 1", flagProcessorCores)
 	}
 
-	d.Memory = opts.Int(flagMemory)
-	if d.Memory != 0 && d.Memory < 1 {
-		return fmt.Errorf("flag '--%s' must be >= 1; set to 0 to disable", flagMemory)
+	if d.Memory, err = parseStringFlagToInt(opts.String(flagMemory)); err != nil {
+		return fmt.Errorf("failed to parse '--%s': %w", flagMemory, err)
+	} else if d.Memory != nil && *d.Memory < 1 {
+		return fmt.Errorf("flag '--%s' must be >= 1", flagMemory)
 	}
 
-	d.MemoryBalloon = opts.Int(flagMemoryBalloon)
-	if d.MemoryBalloon == 0 {
-		d.MemoryBalloon = d.Memory
-	} else if d.MemoryBalloon < 1 {
+	if d.MemoryBalloon, err = parseStringFlagToInt(opts.String(flagMemoryBalloon)); err != nil {
+		return fmt.Errorf("failed to parse '--%s': %w", flagMemoryBalloon, err)
+	} else if d.MemoryBalloon != nil && *d.MemoryBalloon < 0 {
 		return fmt.Errorf("flag '--%s' must be >= 1; set to 0 to disable", flagMemoryBalloon)
 	}
 
-	if d.MemoryBalloon > d.Memory {
+	// Default memory/memory ballon to the other one if it's set
+	if d.Memory != nil && d.MemoryBalloon == nil {
+		d.MemoryBalloon = d.Memory
+	}
+
+	if d.MemoryBalloon != nil && *d.MemoryBalloon != 0 && d.Memory == nil {
+		d.Memory = d.MemoryBalloon
+	}
+
+	// Balloon target can not be higher than total memory.
+	if d.Memory != nil && d.MemoryBalloon != nil && *d.MemoryBalloon > *d.Memory {
 		return fmt.Errorf("flag '--%s' must be <= than flag '--%s'", flagMemoryBalloon, flagMemory)
 	}
 
@@ -243,4 +259,20 @@ func flagEnvVarFromFlagName(name string) string {
 			"_",
 		),
 	)
+}
+
+// Parses string flag to integer. Returns nil if the flag was unset/empty.
+func parseStringFlagToInt(value string) (*int, error) {
+	trimmedValue := strings.TrimSpace(value)
+	if trimmedValue == "" {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	numberValue, err := strconv.Atoi(trimmedValue)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert to int: %w", err)
+	}
+
+	return &numberValue, nil
 }

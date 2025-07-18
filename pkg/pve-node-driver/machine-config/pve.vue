@@ -11,6 +11,10 @@ export default {
     UnitInput,
   },
   props: {
+    uuid: {
+      type:     String,
+      required: true,
+    },
     mode: {
       type:     String,
       required: true,
@@ -75,7 +79,19 @@ export default {
       await this.fetchDevices();
     },
     'currentValue.template': async function (){
-      await this.fetchDevices();
+      await Promise.all([
+        this.fetchDevices(),
+        this.fetchHardware(),
+      ]);
+    },
+    'currentValue.memory': function(newValue, oldValue) {
+      if(this.currentValue.memoryBalloon == 0) {
+        return
+      }
+
+      if(oldValue == this.currentValue.memoryBalloon || newValue < this.currentValue.memoryBalloon) {
+        this.currentValue.memoryBalloon = newValue;
+      }
     },
     currentValue: {
       deep: true,
@@ -153,7 +169,7 @@ export default {
         this.currentValue.memory = "";
       }
 
-      if(this.currentValue.memoryBalloon === null || this.currentValue.memoryBalloon === 0) {
+      if(this.currentValue.memoryBalloon === null) {
         this.currentValue.memoryBalloon = "";
       }
 
@@ -203,7 +219,7 @@ export default {
         return
       }
 
-      if(this.currentValue.memoryBalloon != "" && this.currentValue.memoryBalloon < 1) {
+      if(this.currentValue.memoryBalloon != "" && this.currentValue.memoryBalloon < 0) {
         this.$emit('validationChanged', false);
         return
       }
@@ -329,6 +345,46 @@ export default {
         this.fetchingCount -= 1;
       }
     },
+    async fetchHardware() {
+      if(this.credential == null) {
+        return;
+      }
+
+      if(this.templates && this.currentValue.template == '') {
+        return;
+      }
+
+      try {
+        this.fetchingCount += 1;
+
+        if(!this.currentValue.template) {
+          throw new Error('Template is not selected');
+        }
+
+        const template = this.templates.find(template => this.currentValue.template == template.vmid);
+
+        if(!template) {
+          throw new Error("Template not found")
+        }
+
+        const { data } = await this.fetchFromProxmox(`/api2/json/nodes/${template.node}/qemu/${template.vmid}/config`);
+
+        console.log(data);
+
+        this.currentValue.processorSockets = data.sockets;
+        this.currentValue.processorCores = data.cores;
+        this.currentValue.memory = data.memory;
+        // Memory balloon is an advanced (hidden by default) field, so we default to using the memory value so it is synced unless set explicitly to a different value.
+        this.currentValue.memoryBalloon = data.memory;
+      } catch(e) {
+        this.currentValue.processorSockets = "";
+        this.currentValue.processorCores = "";
+        this.currentValue.memory = "";
+        this.currentValue.memoryBalloon = "";
+      } finally {
+        this.fetchingCount -= 1;
+      }
+    },
     fetchFromProxmox(apiPath){
       if(this.credential == null) {
         throw new Error("Credential not available")
@@ -403,59 +459,61 @@ export default {
 
 <template>
   <div class="mt-20 mb-20">
-    <!-- Resource pool  -->
-    <LabeledInput
-      v-if="resourcePools == null"
-      type="text"
-      :mode="mode"
-      :disabled="disabled"
-      :value="currentValue.resourcePool"
-      @change="e => { currentValue.resourcePool = e.target.value}"
-      label-key="cluster.machineConfig.pve.resourcePool.label"
-      required
-    />
+    <h3>
+      <t k="cluster.machineConfig.pve.template.header" />
+    </h3>
+    <div class="row mb-10">
+      <div class="col span-6">
+        <!-- Resource pool  -->
+        <LabeledInput
+          v-if="resourcePools == null"
+          type="text"
+          :mode="mode"
+          :disabled="disabled"
+          :value="currentValue.resourcePool"
+          @change="e => { currentValue.resourcePool = e.target.value}"
+          label-key="cluster.machineConfig.pve.template.resourcePool.label"
+          required
+        />
 
-    <LabeledSelect
-      v-else
-      :mode="mode"
-      :disabled="disabled"
-      v-model:value="currentValue.resourcePool"
-      :options="resourcePools"
-      label-key="cluster.machineConfig.pve.resourcePool.label"
-      required
-    />
+        <LabeledSelect
+          v-else
+          :mode="mode"
+          :disabled="disabled"
+          v-model:value="currentValue.resourcePool"
+          :options="resourcePools"
+          label-key="cluster.machineConfig.pve.template.resourcePool.label"
+          required
+        />
+      </div>
+      <div class="col span-6">
+        <!-- Template -->
+        <LabeledInput
+          v-if="templates == null"
+          type="number"
+          :mode="mode"
+          :disabled="disabled"
+          :value="currentValue.template"
+          @change="e => { currentValue.template = e.target.value}"
+          label-key="cluster.machineConfig.pve.template.templateID.label"
+          required
+          min="1"
+          step="1"
+        />
 
-    <!-- Template -->
-    <LabeledInput
-      v-if="templates == null"
-      class="mt-20"
-      type="number"
-      :mode="mode"
-      :disabled="disabled"
-      :value="currentValue.template"
-      @change="e => { currentValue.template = e.target.value}"
-      label-key="cluster.machineConfig.pve.template.label"
-      required
-      min="1"
-      step="1"
-    />
-
-    <LabeledSelect
-      v-else
-      class="mt-20"
-      :mode="mode"
-      :disabled="disabled || (resourcePools != null && !currentValue.resourcePool)"
-      v-model:value="templateSelectValue"
-      @option:selected="selectTemplate"
-      :options="Object.values(templateSelectOptions)"
-      label-key="cluster.machineConfig.pve.template.label"
-      required
-    />
-
-    <h2 class="mt-20">
-      <t k="cluster.machineConfig.pve.devices.header" />
-    </h2>
-    <div class="row mt-20">
+        <LabeledSelect
+          v-else
+          :mode="mode"
+          :disabled="disabled || (resourcePools != null && !currentValue.resourcePool)"
+          v-model:value="templateSelectValue"
+          @option:selected="selectTemplate"
+          :options="Object.values(templateSelectOptions)"
+          label-key="cluster.machineConfig.pve.template.templateID.label"
+          required
+        />
+      </div>
+    </div>
+    <div class="row mb-20">
       <div class="col span-6">
         <!-- ISO Device -->
         <LabeledInput
@@ -465,8 +523,8 @@ export default {
           :disabled="disabled"
           :value="currentValue.isoDevice"
           @change="e => { currentValue.isoDevice = e.target.value}"
-          label-key="cluster.machineConfig.pve.devices.iso.label"
-          tooltip-key="cluster.machineConfig.pve.devices.iso.tooltip"
+          label-key="cluster.machineConfig.pve.template.iso.label"
+          tooltip-key="cluster.machineConfig.pve.template.iso.tooltip"
           required
         />
 
@@ -476,8 +534,8 @@ export default {
           :disabled="disabled || (templates != null && !currentValue.template)"
           v-model:value="currentValue.isoDevice"
           :options="isoDeviceSelectOptions"
-          label-key="cluster.machineConfig.pve.devices.iso.label"
-          tooltip-key="cluster.machineConfig.pve.devices.iso.tooltip"
+          label-key="cluster.machineConfig.pve.template.iso.label"
+          tooltip-key="cluster.machineConfig.pve.template.iso.tooltip"
           required
         />
       </div>
@@ -489,8 +547,8 @@ export default {
           :mode="mode"
           :value="currentValue.networkInterface"
           @change="e => { currentValue.networkInterface = e.target.value}"
-          label-key="cluster.machineConfig.pve.devices.network.label"
-          tooltip-key="cluster.machineConfig.pve.devices.network.tooltip"
+          label-key="cluster.machineConfig.pve.template.network.label"
+          tooltip-key="cluster.machineConfig.pve.template.network.tooltip"
           required
         />
 
@@ -500,22 +558,23 @@ export default {
           :disabled="disabled || (templates != null && !currentValue.template)"
           v-model:value="currentValue.networkInterface"
           :options="networkInterfaceSelectOptions"
-          label-key="cluster.machineConfig.pve.devices.network.label"
-          tooltip-key="cluster.machineConfig.pve.devices.network.tooltip"
+          label-key="cluster.machineConfig.pve.template.network.label"
+          tooltip-key="cluster.machineConfig.pve.template.network.tooltip"
           required
         />
       </div>
     </div>
 
-    <h2 class="mt-20">
+    <h3>
       <t k="cluster.machineConfig.pve.hardware.header" />
-    </h2>
-    <div class="row mt-20">
+    </h3>
+    <div class="row mb-10">
       <div class="col span-6">
         <!-- Processor sockets -->
         <UnitInput
           type="number"
           :mode="mode"
+          :disabled="disabled || (templates != null && !currentValue.template)"
           v-model:value="currentValue.processorSockets"
           label-key="cluster.machineConfig.pve.hardware.processorSockets.label"
           suffix="sockets"
@@ -528,6 +587,7 @@ export default {
         <UnitInput
           type="number"
           :mode="mode"
+          :disabled="disabled || (templates != null && !currentValue.template)"
           v-model:value="currentValue.processorCores"
           label-key="cluster.machineConfig.pve.hardware.processorCores.label"
           suffix="cores"
@@ -537,65 +597,72 @@ export default {
       </div>
     </div>
 
-    <div class="row mt-20">
+    <div class="row mb-20">
       <div class="col span-6">
         <!-- Memory -->
         <UnitInput
           type="number"
           :mode="mode"
+          :disabled="disabled || (templates != null && !currentValue.template)"
           v-model:value="currentValue.memory"
           label-key="cluster.machineConfig.pve.hardware.memory.label"
           suffix="MiB"
-          :status="currentValue.memory != '' && currentValue.memoryBalloon != '' && currentValue.memoryBalloon > currentValue.memory ? 'error' : undefined"
           min="0"
           step="256"
         />
       </div>
-      <div class="col span-6">
-        <!-- Memory balloon -->
-        <UnitInput
-          type="number"
-          :mode="mode"
-          v-model:value="currentValue.memoryBalloon"
-          label-key="cluster.machineConfig.pve.hardware.memoryBalloon.label"
-          suffix="MiB"
-          :status="currentValue.memory != '' && currentValue.memoryBalloon != '' && currentValue.memoryBalloon > currentValue.memory ? 'error' : undefined"
-          min="0"
-          step="256"
-          :max="currentValue.memory != '' ? currentValue.memory : undefined"
-        />
-      </div>
     </div>
 
-    <h2 class="mt-20">
-      <t k="cluster.machineConfig.pve.ssh.header" />
-    </h2>
-    <div class="row mt-20">
-      <div class="col span-6">
-        <!-- SSH Username -->
-        <LabeledInput
-          type="text"
-          :mode="mode"
-          v-model:value="currentValue.sshUser"
-          label-key="cluster.machineConfig.pve.ssh.username.label"
-          tooltip-key="cluster.machineConfig.pve.ssh.username.tooltip"
-          required
-        />
+    <portal :to="`advanced-${uuid}`">
+      <h3>
+        <t k="cluster.machineConfig.pve.memoryBalloon.header" />
+      </h3>
+      <div class="row mb-20">
+        <div class="col span-6">
+          <!-- Memory balloon -->
+          <UnitInput
+            type="number"
+            :mode="mode"
+            :disabled="disabled || (templates != null && !currentValue.template)"
+            v-model:value="currentValue.memoryBalloon"
+            label-key="cluster.machineConfig.pve.memoryBalloon.minimumMemory.label"
+            suffix="MiB"
+            min="0"
+            step="256"
+            :max="currentValue.memory != '' ? currentValue.memory : undefined"
+          />
+        </div>
       </div>
-      <div class="col span-6">
-        <!-- SSH Port -->
-        <LabeledInput
-          type="number"
-          :mode="mode"
-          v-model:value="currentValue.sshPort"
-          label-key="cluster.machineConfig.pve.ssh.port.label"
-          tooltip-key="cluster.machineConfig.pve.ssh.port.tooltip"
-          required
-          min="1"
-          step="1"
-        />
-      </div>
-    </div>
 
+      <h3>
+        <t k="cluster.machineConfig.pve.ssh.header" />
+      </h3>
+      <div class="row">
+        <div class="col span-6">
+          <!-- SSH Username -->
+          <LabeledInput
+            type="text"
+            :mode="mode"
+            v-model:value="currentValue.sshUser"
+            label-key="cluster.machineConfig.pve.ssh.username.label"
+            tooltip-key="cluster.machineConfig.pve.ssh.username.tooltip"
+            required
+          />
+        </div>
+        <div class="col span-6">
+          <!-- SSH Port -->
+          <LabeledInput
+            type="number"
+            :mode="mode"
+            v-model:value="currentValue.sshPort"
+            label-key="cluster.machineConfig.pve.ssh.port.label"
+            tooltip-key="cluster.machineConfig.pve.ssh.port.tooltip"
+            required
+            min="1"
+            step="1"
+          />
+        </div>
+      </div>
+    </portal>
   </div>
 </template>

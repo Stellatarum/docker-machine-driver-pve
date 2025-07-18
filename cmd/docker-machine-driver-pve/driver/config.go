@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -27,6 +28,8 @@ const (
 	flagMemory           = "pve-memory"
 	flagMemoryBalloon    = "pve-memory-balloon"
 )
+
+var errFlagIsNotSet = errors.New("flag is not set")
 
 // Default values for flags.
 const (
@@ -151,8 +154,6 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 }
 
 // SetConfigFromFlags implements drivers.Driver.
-//
-//nolint:cyclop,gocyclo
 func (d *Driver) SetConfigFromFlags(opts drivers.DriverOptions) error {
 	d.URL = opts.String(flagURL)
 	if d.URL == "" {
@@ -207,40 +208,61 @@ func (d *Driver) SetConfigFromFlags(opts drivers.DriverOptions) error {
 		return fmt.Errorf("flag '--%s' must be > 0", flagSSHPort)
 	}
 
+	if err := d.setCPUConfigFromFlags(opts); err != nil {
+		return err
+	}
+
+	if err := d.setMemoryConfigFromFlags(opts); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Validates and sets CPU configuration options.
+func (d *Driver) setCPUConfigFromFlags(opts drivers.DriverOptions) error {
 	var err error
 
 	if d.ProcessorSockets, err = parseStringFlagToInt(opts.String(flagProcessorSockets)); err != nil {
-		return fmt.Errorf("failed to parse '--%s': %w", flagProcessorSockets, err)
+		if !errors.Is(err, errFlagIsNotSet) {
+			return fmt.Errorf("failed to parse '--%s': %w", flagProcessorSockets, err)
+		}
 	} else if d.ProcessorSockets != nil && *d.ProcessorSockets < 1 {
 		return fmt.Errorf("flag '--%s' must be >= 1", flagProcessorSockets)
 	}
 
 	if d.ProcessorCores, err = parseStringFlagToInt(opts.String(flagProcessorCores)); err != nil {
-		return fmt.Errorf("failed to parse '--%s': %w", flagProcessorCores, err)
+		if !errors.Is(err, errFlagIsNotSet) {
+			return fmt.Errorf("failed to parse '--%s': %w", flagProcessorCores, err)
+		}
 	} else if d.ProcessorCores != nil && *d.ProcessorCores < 1 {
 		return fmt.Errorf("flag '--%s' must be >= 1", flagProcessorCores)
 	}
 
+	return nil
+}
+
+// Validates and sets memory configuration options.
+func (d *Driver) setMemoryConfigFromFlags(opts drivers.DriverOptions) error {
+	var err error
+
 	if d.Memory, err = parseStringFlagToInt(opts.String(flagMemory)); err != nil {
-		return fmt.Errorf("failed to parse '--%s': %w", flagMemory, err)
+		if !errors.Is(err, errFlagIsNotSet) {
+			return fmt.Errorf("failed to parse '--%s': %w", flagMemory, err)
+		}
 	} else if d.Memory != nil && *d.Memory < 1 {
 		return fmt.Errorf("flag '--%s' must be >= 1", flagMemory)
 	}
 
 	if d.MemoryBalloon, err = parseStringFlagToInt(opts.String(flagMemoryBalloon)); err != nil {
-		return fmt.Errorf("failed to parse '--%s': %w", flagMemoryBalloon, err)
+		if !errors.Is(err, errFlagIsNotSet) {
+			return fmt.Errorf("failed to parse '--%s': %w", flagMemoryBalloon, err)
+		}
 	} else if d.MemoryBalloon != nil && *d.MemoryBalloon < 0 {
 		return fmt.Errorf("flag '--%s' must be >= 1; set to 0 to disable", flagMemoryBalloon)
 	}
 
-	// Default memory/memory ballon to the other one if it's set
-	if d.Memory != nil && d.MemoryBalloon == nil {
-		d.MemoryBalloon = d.Memory
-	}
-
-	if d.MemoryBalloon != nil && *d.MemoryBalloon != 0 && d.Memory == nil {
-		d.Memory = d.MemoryBalloon
-	}
+	d.setMemoryConfigDefaults()
 
 	// Balloon target can not be higher than total memory.
 	if d.Memory != nil && d.MemoryBalloon != nil && *d.MemoryBalloon > *d.Memory {
@@ -248,6 +270,17 @@ func (d *Driver) SetConfigFromFlags(opts drivers.DriverOptions) error {
 	}
 
 	return nil
+}
+
+func (d *Driver) setMemoryConfigDefaults() {
+	// Default memory/memory ballon to the other one if it's set.
+	if d.Memory != nil && d.MemoryBalloon == nil {
+		d.MemoryBalloon = d.Memory
+	}
+
+	if d.MemoryBalloon != nil && *d.MemoryBalloon != 0 && d.Memory == nil {
+		d.Memory = d.MemoryBalloon
+	}
 }
 
 // Creates flag's EnvVar from it's name.
@@ -261,12 +294,11 @@ func flagEnvVarFromFlagName(name string) string {
 	)
 }
 
-// Parses string flag to integer. Returns nil if the flag was unset/empty.
+// Parses string flag to integer. Returns nil and errFlagIsNotSet if the flag was unset/empty.
 func parseStringFlagToInt(value string) (*int, error) {
 	trimmedValue := strings.TrimSpace(value)
 	if trimmedValue == "" {
-		//nolint:nilnil
-		return nil, nil
+		return nil, errFlagIsNotSet
 	}
 
 	numberValue, err := strconv.Atoi(trimmedValue)

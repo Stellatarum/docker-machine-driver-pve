@@ -160,7 +160,7 @@ tasks:
     deps:
       - dependencies:node
     cmd: >
-      yarn exec markdownlint-cli2 -- **/*.md
+      yarn exec markdownlint-cli2 -- **/*.md README.md
 
   # |------------------------------------------------------------------------------------------------------------------
   # | Builds

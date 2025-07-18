@@ -11,31 +11,31 @@ import (
 func (d *Driver) setupHardware(ctx context.Context) error {
 	options := make([]proxmox.VirtualMachineOption, 0)
 
-	if d.ProcessorSockets != 0 {
+	if d.ProcessorSockets != nil {
 		options = append(options, proxmox.VirtualMachineOption{
 			Name:  "sockets",
-			Value: d.ProcessorSockets,
+			Value: *d.ProcessorSockets,
 		})
 	}
 
-	if d.ProcessorCores != 0 {
+	if d.ProcessorCores != nil {
 		options = append(options, proxmox.VirtualMachineOption{
 			Name:  "cores",
-			Value: d.ProcessorCores,
+			Value: *d.ProcessorCores,
 		})
 	}
 
-	if d.Memory != 0 {
+	if d.Memory != nil {
 		options = append(options, proxmox.VirtualMachineOption{
 			Name:  "memory",
-			Value: d.Memory,
+			Value: *d.Memory,
 		})
 	}
 
-	if d.MemoryBalloon != 0 {
+	if d.MemoryBalloon != nil {
 		options = append(options, proxmox.VirtualMachineOption{
 			Name:  "balloon",
-			Value: d.MemoryBalloon,
+			Value: *d.MemoryBalloon,
 		})
 	}
 

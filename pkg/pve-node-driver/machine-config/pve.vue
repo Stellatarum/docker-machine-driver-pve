@@ -153,7 +153,7 @@ export default {
         this.currentValue.memory = "";
       }
 
-      if(this.currentValue.memoryBalloon === null || this.currentValue.memoryBalloon === 0) {
+      if(this.currentValue.memoryBalloon === null) {
         this.currentValue.memoryBalloon = "";
       }
 
@@ -203,7 +203,7 @@ export default {
         return
       }
 
-      if(this.currentValue.memoryBalloon != "" && this.currentValue.memoryBalloon < 1) {
+      if(this.currentValue.memoryBalloon != "" && this.currentValue.memoryBalloon < 0) {
         this.$emit('validationChanged', false);
         return
       }

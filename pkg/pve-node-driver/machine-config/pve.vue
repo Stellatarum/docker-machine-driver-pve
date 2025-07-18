@@ -84,6 +84,15 @@ export default {
         this.fetchHardware(),
       ]);
     },
+    'currentValue.memory': function(newValue, oldValue) {
+      if(this.currentValue.memoryBalloon == 0) {
+        return
+      }
+
+      if(oldValue == this.currentValue.memoryBalloon || newValue < this.currentValue.memoryBalloon) {
+        this.currentValue.memoryBalloon = newValue;
+      }
+    },
     currentValue: {
       deep: true,
       handler(){
@@ -597,7 +606,6 @@ export default {
           v-model:value="currentValue.memory"
           label-key="cluster.machineConfig.pve.hardware.memory.label"
           suffix="MiB"
-          :status="currentValue.memory != '' && currentValue.memoryBalloon != '' && currentValue.memoryBalloon > currentValue.memory ? 'error' : undefined"
           min="0"
           step="256"
         />
@@ -611,7 +619,6 @@ export default {
           v-model:value="currentValue.memoryBalloon"
           label-key="cluster.machineConfig.pve.hardware.memoryBalloon.label"
           suffix="MiB"
-          :status="currentValue.memory != '' && currentValue.memoryBalloon != '' && currentValue.memoryBalloon > currentValue.memory ? 'error' : undefined"
           min="0"
           step="256"
           :max="currentValue.memory != '' ? currentValue.memory : undefined"

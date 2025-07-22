@@ -1,0 +1,19 @@
+{
+  "name": "pve-node-driver",
+  "description": "Node Driver for Proxmox Virtual Environment.",
+  "version": "1.1.0-rc1",
+  "private": false,
+  "rancher": true,
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-typescript": "~5.0.0",
+    "@vue/cli-service": "~5.0.0"
+  },
+  "files": [
+    "**/*"
+  ],
+  "main": "pve-node-driver-1.1.0-rc1.umd.min.js"
+}

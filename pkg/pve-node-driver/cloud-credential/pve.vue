@@ -84,7 +84,7 @@ export default {
             redirectUnauthorized: false,
           })
   
-          if(!data.version.startsWith('8.')) {
+          if(!data.version.startsWith('8.') && !data.version.startsWith('9.')) {
             this.errorLabelKey = 'cluster.credential.pve.errors.unsupportedProxmoxVersion';
             return false;
           }

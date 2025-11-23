@@ -154,16 +154,19 @@ func (d *Driver) initialize() error {
 		return fmt.Errorf("failed to retrieve newly created Proxmox VE virtual machine ID='%d': %w", *d.PVEMachineID, err)
 	}
 
-	for _, tag := range append(d.Tags, pveMachineTag) {
-		tagTask, err := machine.AddTag(context.TODO(), tag)
+	tagString := append(d.Tags, pveMachineTag)
 
-		if err == nil {
-			err = d.waitForPVETaskToSucceed(context.TODO(), tagTask)
-		}
+	tagTask, err := machine.Config(context.TODO(), proxmox.VirtualMachineOption{
+		Name:  "tags",
+		Value: tagString,
+	})
 
-		if err != nil {
-			return fmt.Errorf("failed to add tag '%s' to Proxmox VE virtual machine ID='%d': %w", tag, *d.PVEMachineID, err)
-		}
+	if err == nil {
+		err = d.waitForPVETaskToSucceed(context.TODO(), tagTask)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to add tags '%s' to Proxmox VE virtual machine ID='%d': %w", tagString, *d.PVEMachineID, err)
 	}
 
 	log.Info("Configuring machine hardware...")

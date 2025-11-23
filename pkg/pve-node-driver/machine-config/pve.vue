@@ -60,6 +60,7 @@ export default {
         memory: this.value.memory ? parseInt(this.value.memory) : "",
         memoryBalloon: this.value.memoryBalloon ? parseInt(this.value.memoryBalloon) : "",
         fullClone: this.value.fullClone ?? false,
+        tags: this.value.tags ?? '',
       },
     }
   },
@@ -616,6 +617,23 @@ export default {
     </div>
 
     <portal :to="`advanced-${uuid}`">
+      <h3>
+        <t k="cluster.machineConfig.pve.vmTags.header" />
+      </h3>
+      <div class="row mb-20">
+        <div class="col span-12">
+          <!-- VM Tags -->
+          <LabeledInput
+            type="text"
+            :mode="mode"
+            v-model:value="currentValue.tags"
+            label-key="cluster.machineConfig.pve.vmTags.label"
+            tooltip-key="cluster.machineConfig.pve.vmTags.tooltip"
+            placeholder="tag1,tag2"
+          />
+        </div>
+      </div>
+
       <h3>
         <t k="cluster.machineConfig.pve.memoryBalloon.header" />
       </h3>

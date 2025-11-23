@@ -58,6 +58,10 @@ cluster:
         minimumMemory:
           label: Minimum memory (balloon target)
           tooltip: When set to 0, disables ballooning. When left empty, value from "Memory" is assigned as ballooning target.
+      vmTags:
+        header: VM Tags
+        label: Tags
+        tooltip: Comma-separated list of tags to assign to the VM
       ssh:
         header: SSH Connection
         username:

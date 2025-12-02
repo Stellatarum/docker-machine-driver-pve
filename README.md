@@ -109,6 +109,7 @@ You can use [sample Ubuntu Server template](deploy/templates/ubuntu-server) for 
 | `--pve-processor-cores`   | `PVE_PROCESSOR_CORES`   | *unset*                            | If set, number of processor cores to configure for the machine.                                                      |
 | `--pve-memory`            | `PVE_MEMORY`            | *unset* <sup>1</sup>               | If set, amount of memory in MiB to configure for the machine.                                                        |
 | `--pve-memory-balloon`    | `PVE_MEMORY_BALLOON`    | *unset* <sup>1</sup>               | If set, minimum amount of memory in MiB to configure for the machine.<br> If set to `0`, disables memory ballooning. |
+| `--pve-tags`              | `PVE_TAGS`              | *unset*                            | If set, Comma-separated list of tags to assign to the VM (eg. `foo,bar,foobar`).                                     |
 
 <sup>1</sup> - If only one of `--pve-memory` or `--pve-memory-balloon` is specified, the other one will automatically be defaulted to the same value except if `--pve-memory-balloon` is set to `0`.
 

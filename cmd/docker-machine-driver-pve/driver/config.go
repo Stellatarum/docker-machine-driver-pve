@@ -27,6 +27,7 @@ const (
 	flagMemory           = "pve-memory"
 	flagMemoryBalloon    = "pve-memory-balloon"
 	flagFullClone        = "pve-full-clone"
+	flagTags             = "pve-tags"
 )
 
 // Default values for flags.
@@ -76,6 +77,9 @@ type config struct {
 
 	// Forces full copy of all disks, even if underlying storage supports linked clones.
 	FullClone bool
+
+	// Tags to apply to the machine.
+	Tags []string
 }
 
 // GetCreateFlags implements drivers.Driver.
@@ -155,6 +159,11 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Name:   flagFullClone,
 			EnvVar: flagEnvVarFromFlagName(flagFullClone),
 			Usage:  "Forces full copy of all disks, even if underlying storage supports linked clones.",
+		},
+		mcnflag.StringFlag{
+			Name:   flagTags,
+			EnvVar: flagEnvVarFromFlagName(flagTags),
+			Usage:  "Comma-separated list of tags to assign to the VM",
 		},
 	}
 }
@@ -257,6 +266,8 @@ func (d *Driver) SetConfigFromFlags(opts drivers.DriverOptions) error {
 	}
 
 	d.FullClone = opts.Bool(flagFullClone)
+
+	d.Tags = strings.Split(opts.String(flagTags), ",")
 
 	return nil
 }

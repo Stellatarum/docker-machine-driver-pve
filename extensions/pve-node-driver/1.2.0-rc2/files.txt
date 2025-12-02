@@ -1,0 +1,15 @@
+files.txt
+plugin/package.json
+plugin/pve-node-driver-1.2.0-rc2.umd.min.37.js
+plugin/pve-node-driver-1.2.0-rc2.umd.min.37.js.map
+plugin/pve-node-driver-1.2.0-rc2.umd.min.686.js
+plugin/pve-node-driver-1.2.0-rc2.umd.min.686.js.map
+plugin/pve-node-driver-1.2.0-rc2.umd.min.800.js
+plugin/pve-node-driver-1.2.0-rc2.umd.min.800.js.map
+plugin/pve-node-driver-1.2.0-rc2.umd.min.cloud-credential.js
+plugin/pve-node-driver-1.2.0-rc2.umd.min.cloud-credential.js.map
+plugin/pve-node-driver-1.2.0-rc2.umd.min.js
+plugin/pve-node-driver-1.2.0-rc2.umd.min.js.map
+plugin/pve-node-driver-1.2.0-rc2.umd.min.machine-config.js
+plugin/pve-node-driver-1.2.0-rc2.umd.min.machine-config.js.map
+plugin/report.html
